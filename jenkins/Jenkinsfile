@@ -1,24 +1,36 @@
 pipeline {
     agent {
         docker {
-            image 'node:lts-buster-slim'
-            args '-p 3000:3000'
+            image 'node:lts-buster-slim'   // Node.js Docker image
         }
     }
+
     environment {
         CI = 'true'
     }
+
     stages {
         stage('Build') {
             steps {
+                echo 'Installing dependencies...'
                 sh 'npm install'
             }
         }
+
         stage('Test') {
             steps {
-                sh './jenkins/scripts/test.sh'
+                echo 'Running tests...'
+                sh 'npm test'   // or './jenkins/scripts/test.sh' if you have a custom script
             }
         }
-      
+    }
+
+    post {
+        success {
+            echo '✅ Build and Test completed successfully!'
+        }
+        failure {
+            echo '❌ Build or Test failed. Check logs for details.'
+        }
     }
 }

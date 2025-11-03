@@ -13,14 +13,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install'
+                bat 'npm install'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'npm test'   // or './jenkins/scripts/test.sh' if you have a custom script
+                bat 'npm test'   // or './jenkins/scripts/test.sh' if you have a custom script
             }
         }
     }

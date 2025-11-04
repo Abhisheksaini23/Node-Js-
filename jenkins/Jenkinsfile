@@ -1,22 +1,34 @@
 pipeline {
-    agent any   // Runs on your Windows Jenkins agent
+    agent any
 
     environment {
-        CI = 'true'
+        CI = 'true'   // Enables continuous integration mode for npm
     }
 
     stages {
         stage('Build') {
             steps {
-                echo 'Installing dependencies...'
-                bat 'npm install'
+                echo '🔧 Installing dependencies...'
+                script {
+                    if (isUnix()) {
+                        sh 'npm install'
+                    } else {
+                        bat 'npm install'
+                    }
+                }
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                bat 'npm test'
+                echo '🧪 Running tests...'
+                script {
+                    if (isUnix()) {
+                        sh 'npm test'
+                    } else {
+                        bat 'npm test'
+                    }
+                }
             }
         }
     }
@@ -26,7 +38,8 @@ pipeline {
             echo '✅ Build and Test completed successfully!'
         }
         failure {
-            echo '❌ Build or Test failed. Check logs for details.'
+            echo '❌ Build or Test failed — check console output.'
         }
     }
 }
+

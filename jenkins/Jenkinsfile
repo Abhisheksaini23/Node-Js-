@@ -2,11 +2,25 @@ pipeline {
     agent any
 
     stages {
+        stage('Diagnose Environment') {
+            steps {
+                echo '--- DIAGNOSING ENVIRONMENT ---'
+                
+                // Let's see what the job's 'bat' step sees as the PATH
+                bat 'echo [BAT_PATH] %PATH%'
+                
+                // Let's see what PowerShell sees as the PATH
+                // pwsh -c '...' runs a PowerShell command.
+                // $env:Path prints the path variable.
+                bat 'pwsh -c "Write-Host [PWSH_PATH] $env:Path"'
+                
+                echo '--- END DIAGNOSIS ---'
+            }
+        }
+        
         stage('Verify Environment') {
             steps {
                 echo '🔍 Checking environment variables...'
-                
-                // These commands will now work because your PATH is fixed
                 bat 'node -v'
                 bat 'npm -v'
             }
@@ -22,20 +36,15 @@ pipeline {
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                
-                // This '|| ( )' syntax is the correct way
-                // to handle an optional test script in Windows
                 bat 'npm test || (echo No test script found)'
             }
         }
     }
-
+    
     post {
-        success {
-            echo '✅ Build and Test completed successfully!'
-        }
-        failure {
-            echo '❌ Build or Test failed — check console output.'
+        // This 'always' block will run even if a stage fails
+        always {
+            echo 'Pipeline finished.'
         }
     }
 }

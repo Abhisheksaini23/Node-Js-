@@ -6,10 +6,9 @@ pipeline {
             steps {
                 echo '🔧 Installing dependencies...'
                 bat '''
-                echo Current Directory: %cd%
-                node -v
-                npm -v
-                npm install
+                "C:\\Windows\\System32\\cmd.exe" /c node -v
+                "C:\\Windows\\System32\\cmd.exe" /c npm -v
+                "C:\\Windows\\System32\\cmd.exe" /c npm install
                 '''
             }
         }
@@ -18,7 +17,7 @@ pipeline {
             steps {
                 echo '🧪 Running tests...'
                 bat '''
-                npm test || echo "No test script found in package.json"
+                "C:\\Windows\\System32\\cmd.exe" /c npm test || echo "No test script found"
                 '''
             }
         }
@@ -33,3 +32,4 @@ pipeline {
         }
     }
 }
+

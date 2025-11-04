@@ -2,23 +2,28 @@ pipeline {
     agent any
 
     stages {
+        stage('Verify Environment') {
+            steps {
+                echo '🔍 Checking environment variables...'
+                bat '"C:\\Windows\\System32\\cmd.exe" /c echo PATH=%PATH%'
+                bat '"C:\\Windows\\System32\\cmd.exe" /c where node'
+                bat '"C:\\Windows\\System32\\cmd.exe" /c where npm'
+            }
+        }
+
         stage('Build') {
             steps {
                 echo '🔧 Installing dependencies...'
-                bat '''
-                "C:\\Windows\\System32\\cmd.exe" /c node -v
-                "C:\\Windows\\System32\\cmd.exe" /c npm -v
-                "C:\\Windows\\System32\\cmd.exe" /c npm install
-                '''
+                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\node.exe" -v'
+                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" -v'
+                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" install"'
             }
         }
 
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                bat '''
-                "C:\\Windows\\System32\\cmd.exe" /c npm test || echo "No test script found"
-                '''
+                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" test || echo No test script found"'
             }
         }
     }
@@ -32,4 +37,3 @@ pipeline {
         }
     }
 }
-

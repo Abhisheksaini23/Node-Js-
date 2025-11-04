@@ -1,39 +1,54 @@
 pipeline {
     agent any
 
+    environment {
+        NODE_OPTIONS = "--max-old-space-size=4096"
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                echo '📦 Checking out source code...'
+                checkout scm
+            }
+        }
+
         stage('Verify Environment') {
             steps {
                 echo '🔍 Checking environment variables...'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c echo PATH=%PATH%'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c where node'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c where npm'
+                bat 'echo Node version: && node -v'
+                bat 'echo NPM version: && npm -v'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo '📥 Installing dependencies...'
+                bat 'npm install'
             }
         }
 
         stage('Build') {
             steps {
-                echo '🔧 Installing dependencies...'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\node.exe" -v'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" -v'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" install"'
+                echo '🏗️ Building project...'
+                bat 'npm run build'
             }
         }
 
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                bat '"C:\\Windows\\System32\\cmd.exe" /c "C:\\Program Files\\nodejs\\npm.cmd" test || echo No test script found"'
+                bat 'npm test'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build and Test completed successfully!'
+            echo '✅ Build succeeded!'
         }
         failure {
-            echo '❌ Build or Test failed — check console output.'
+            echo '❌ Build failed – check console output.'
         }
     }
 }

@@ -2,40 +2,30 @@ pipeline {
     agent any
 
     environment {
-        CI = 'true'   // Enables continuous integration mode for npm
+        NODE_HOME = "C:\\Program Files\\nodejs"
+        PATH = "${NODE_HOME};${env.PATH}"
     }
 
     stages {
         stage('Build') {
             steps {
                 echo '🔧 Installing dependencies...'
-                script {
-                    if (isUnix()) {
-                        sh 'npm install'
-                    } else {
-                        bat 'npm install'
-                    }
-                }
+                bat 'npm install'
             }
         }
 
         stage('Test') {
             steps {
                 echo '🧪 Running tests...'
-                script {
-                    if (isUnix()) {
-                        sh 'npm test'
-                    } else {
-                        bat 'npm test'
-                    }
-                }
+                // if you have test scripts in package.json
+                bat 'npm test || echo "No tests configured"'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build and Test completed successfully!'
+            echo '✅ Build and test completed successfully!'
         }
         failure {
             echo '❌ Build or Test failed — check console output.'

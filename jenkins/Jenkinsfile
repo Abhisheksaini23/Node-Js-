@@ -1,79 +1,41 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        IMAGE_NAME = "abhisheksaini23/abhisheksaini-react-app"
-        EC2_USER = "ec2-user"
-        EC2_HOST = "15.207.221.2"
+  environment {
+    IMAGE_NAME = "abhishekkk23/nodejs-app"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/Abhisheksaini23/Node-Js-.git'
+      }
     }
 
-    stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                bat 'npm install'
-            }
-        }
-
-        stage('Build React App') {
-            steps {
-                bat 'npm run build'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'npm test -- --passWithNoTests'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${env.BUILD_NUMBER}")
-                }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        dockerImage.push()
-                        dockerImage.push('latest')
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to EC2 Server') {
-            steps {
-                sshagent(['EC2Key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "
-                        docker pull ${IMAGE_NAME}:latest &&
-                        docker stop reactapp || true &&
-                        docker rm reactapp || true &&
-                        docker run -d -p 80:80 --name reactapp ${IMAGE_NAME}:latest
-                    "
-                    """
-                }
-            }
-        }
+    stage('Install Dependencies') {
+      steps {
+        sh 'npm install'
+      }
     }
 
-    post {
-        success {
-            echo "✅ Deployment Successful! Visit: http://${EC2_HOST}"
-        }
-        failure {
-            echo "❌ Deployment Failed!"
-        }
+    stage('Build Docker Image') {
+      steps {
+        sh "docker build -t $IMAGE_NAME:latest ."
+      }
     }
+
+    stage('Login to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+          sh "echo $PASS | docker login -u $USER --password-stdin"
+        }
+      }
+    }
+
+    stage('Push to Docker Hub') {
+      steps {
+        sh "docker push $IMAGE_NAME:latest"
+      }
+    }
+  }
 }

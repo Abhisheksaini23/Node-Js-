@@ -27,11 +27,12 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                bat 'npm test --passWithNoTests'
-            }
-        }
+      stage('Test') {
+    steps {
+        bat 'npm test -- --passWithNoTests'
+    }
+}
+
     }
 
     post {

@@ -1,46 +1,51 @@
 pipeline {
     agent any
-
-    environment {
-        PATH = "C:\\Program Files\\nodejs;C:\\Windows\\System32;${PATH}"
-    }
-
+    
     stages {
-
+        
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Install Dependencies') {
-            steps {
-                bat 'node -v'
-                bat 'npm -v'
-                bat 'npm install'
-            }
+            steps { bat 'npm install' }
         }
 
         stage('Build') {
+            steps { bat 'npm run build' }
+        }
+
+        stage('Test') {
+            steps { bat 'npm test -- --passWithNoTests' }
+        }
+
+        stage('Build Docker Image') {
             steps {
-                bat 'npm run build'
+                script {
+                    dockerImage = docker.build("abhisheksaini/react-app:${env.BUILD_NUMBER}")
+                }
             }
         }
 
-      stage('Test') {
-    steps {
-        bat 'npm test -- --passWithNoTests'
-    }
-}
-
-    }
-
-    post {
-        success {
-            echo "✅ Build & Test Successful!"
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        dockerImage.push()
+                        dockerImage.push('latest')
+                    }
+                }
+            }
         }
-        failure {
-            echo "❌ Build or Test Failed. Check logs."
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['EC2Key']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ubuntu@YOUR_EC2_PUBLIC_IP "docker pull abhisheksaini/react-app:latest && docker stop reactapp || true && docker rm reactapp || true && docker run -d -p 80:80 --name reactapp abhisheksaini/react-app:latest"
+                    """
+                }
+            }
         }
     }
 }

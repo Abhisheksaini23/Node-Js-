@@ -1,50 +1,10 @@
 pipeline {
-    agent any
-
-    stages {
-        stage('Diagnose Environment') {
-            steps {
-                echo '--- DIAGNOSING ENVIRONMENT ---'
-                
-                // Let's see what the job's 'bat' step sees as the PATH
-                bat 'echo [BAT_PATH] %PATH%'
-                
-                // Let's see what PowerShell sees as the PATH
-                // pwsh -c '...' runs a PowerShell command.
-                // $env:Path prints the path variable.
-                bat 'pwsh -c "Write-Host [PWSH_PATH] $env:Path"'
-                
-                echo '--- END DIAGNOSIS ---'
-            }
-        }
-        
-        stage('Verify Environment') {
-            steps {
-                echo '🔍 Checking environment variables...'
-                bat 'node -v'
-                bat 'npm -v'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo '🔧 Installing dependencies...'
-                bat 'npm install'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo '🧪 Running tests...'
-                bat 'npm test || (echo No test script found)'
-            }
-        }
+  agent any
+  stages {
+    stage('Check CMD') {
+      steps {
+        bat 'echo CMD is working now!'
+      }
     }
-    
-    post {
-        // This 'always' block will run even if a stage fails
-        always {
-            echo 'Pipeline finished.'
-        }
-    }
+  }
 }
